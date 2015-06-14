@@ -16,10 +16,11 @@
 #define LED_GREEN 	PB3
 #define LED_BLUE 	PB4
 
-#define DELAY_TIME 1000;
+#define DELAY_TIME 10;
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue);
-void cycle_test(void);
+void cycle_test(uint8_t speed);
+void delay(uint8_t ms);
 
 int main(void) {
 	
@@ -45,7 +46,7 @@ int main(void) {
 	
 	while (1) {
 		
-		cycle_test();
+		cycle_test(10);
 
 	}
 	
@@ -88,44 +89,50 @@ void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
 	}	
 }
 
-void cycle_test(void) {
+void cycle_test(uint8_t speed) {
 	for (int i = 0; i < 256; i++) {
 		display_color(i, 0, 0, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 255; i >= 0; i--) {
 		display_color(i, 0, 0, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 0; i < 256; i++) {
 		display_color(0, i, 0, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 255; i >= 0; i--) {
 		display_color(0, i, 0, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 0; i < 256; i++) {
 		display_color(0, 0, i, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 255; i >= 0; i--) {
 		display_color(0, 0, i, 0);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 0; i < 256; i++) {
 		display_color(0, 0, 0, i);
-		_delay_ms(5);
+		delay(speed);
 	}
 
 	for (int i = 255; i >= 0; i--) {
 		display_color(0, 0, 0, i);
-		_delay_ms(5);
+		delay(speed);
+	}
+}
+
+void delay(uint8_t ms) {
+	for (int i = 0; i < ms; i++) {
+		_delay_ms(1);
 	}
 }
