@@ -20,6 +20,7 @@
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue);
 void cycle_test(uint8_t speed);
+void cycle_colors(uint8_t speed);
 void delay(uint8_t ms);
 
 int main(void) {
@@ -47,6 +48,7 @@ int main(void) {
 	while (1) {
 		
 		cycle_test(10);
+		cycle_colors(15);
 
 	}
 	
@@ -90,49 +92,96 @@ void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 void cycle_test(uint8_t speed) {
-	for (int i = 0; i < 256; i++) {
+	
+	int i;
+	
+	for (i = 0; i < 256; i++) {
 		display_color(i, 0, 0, 0);
 		delay(speed);
 	}
 
-	for (int i = 255; i >= 0; i--) {
+	for (i = 255; i >= 0; i--) {
 		display_color(i, 0, 0, 0);
 		delay(speed);
 	}
 
-	for (int i = 0; i < 256; i++) {
+	for (i = 0; i < 256; i++) {
 		display_color(0, i, 0, 0);
 		delay(speed);
 	}
 
-	for (int i = 255; i >= 0; i--) {
+	for (i = 255; i >= 0; i--) {
 		display_color(0, i, 0, 0);
 		delay(speed);
 	}
 
-	for (int i = 0; i < 256; i++) {
+	for (i = 0; i < 256; i++) {
 		display_color(0, 0, i, 0);
 		delay(speed);
 	}
 
-	for (int i = 255; i >= 0; i--) {
+	for (i = 255; i >= 0; i--) {
 		display_color(0, 0, i, 0);
 		delay(speed);
 	}
 
-	for (int i = 0; i < 256; i++) {
+	for (i = 0; i < 256; i++) {
 		display_color(0, 0, 0, i);
 		delay(speed);
 	}
 
-	for (int i = 255; i >= 0; i--) {
+	for (i = 255; i >= 0; i--) {
 		display_color(0, 0, 0, i);
 		delay(speed);
 	}
 }
 
+void cycle_colors(uint8_t speed) {
+	
+	int i;
+	
+	uint8_t white = 0;
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+	
+	for(i = 0; i < 256; i++) {
+		
+		red = 255 - i;
+		green = i;
+		blue = 0;
+		
+		display_color(white, red, green, blue);
+		delay(speed);
+	}
+	
+	for(i = 0; i < 256; i++) {
+		
+		red = 0;
+		green = 255 - i;
+		blue = i;
+		
+		display_color(white, red, green, blue);
+		delay(speed);
+	}
+	
+	for(i = 0; i < 256; i++) {
+		
+		red = i;
+		green = 0;
+		blue = 255 - i;
+		
+		display_color(white, red, green, blue);
+		delay(speed);
+	}
+}
+
 void delay(uint8_t ms) {
-	for (int i = 0; i < ms; i++) {
+	
+	int i;
+	
+	for (i = 0; i < ms; i++) {
 		_delay_ms(1);
 	}
+	
 }
