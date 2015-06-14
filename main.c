@@ -57,10 +57,10 @@ int main(void) {
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
 	
-	OCR0A = white;		// White LED
-	OCR0B = red;  	// Red LED
-	OCR1A = green; 		// Green LED
-	OCR1B = blue; 		// Blue LED
+	OCR0A = white;
+	OCR0B = red;
+	OCR1A = green;
+	OCR1B = blue;
 	
 	if(OCR0A == 0) {
 		DDRB &= ~(1 << PB2);
