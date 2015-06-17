@@ -11,10 +11,16 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#define BAUD 9600
+#define MYUBRR F_CPU/8/BAUD-1
+
 #define LED_CLEAR 	PB2
 #define LED_RED 	PD5
 #define LED_GREEN 	PB3
 #define LED_BLUE 	PB4
+
+#define SERIAL_RECEIVE PD0
+#define SERIAL_TRANSMIT PD1
 
 #define DELAY_TIME 10;
 
@@ -22,6 +28,9 @@ void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue);
 void cycle_test(uint8_t speed);
 void cycle_colors(uint8_t speed);
 void delay(uint8_t ms);
+
+void usart_init(uint16_t ubrr);
+void usart_putchar(char data);
 
 int main(void) {
 	
@@ -39,6 +48,11 @@ int main(void) {
 	TCCR1A |= (1 << WGM10) | (1 << COM1A1) | (1 << COM1B1); 
 	TCCR1B |= (1 << WGM12) | (1 << CS11);
 	
+	/**
+	 * Enable USART
+	 */
+	usart_init(MYUBRR);
+	
 	// -------- Inits -------- //
 	DDRB |= (1 << LED_GREEN) | (1 << LED_BLUE) | (1 << LED_CLEAR);
 	DDRD |= (1 << LED_RED);
@@ -47,12 +61,51 @@ int main(void) {
 	
 	while (1) {
 		
-		cycle_test(10);
-		cycle_colors(15);
+		//cycle_test(10);
+		//cycle_colors(15);
+		usart_putchar('H');
+		usart_putchar('e');
+		usart_putchar('l');
+		usart_putchar('l');
+		usart_putchar('o');
+		usart_putchar(' ');
+		usart_putchar('W');
+		usart_putchar('o');
+		usart_putchar('r');
+		usart_putchar('l');
+		usart_putchar('d');
+		usart_putchar('!');
+		usart_putchar('\n');
+		
+		_delay_ms(1000);
 
 	}
 	
 	return 0;
+}
+
+void usart_init(uint16_t ubrr) {
+	
+	// Set baud rate
+	UBRRH = (uint8_t) (ubrr>>8);
+	UBRRL = (uint8_t) ubrr;
+	
+	// Double the USART Transmission Speed
+	UCSRA |= (1 << U2X);
+	
+	// Enable receiver and transmitter
+	UCSRB |= (1 << RXEN) | (1 << TXEN);
+	
+	// Set frame format: 8 data, 1 stop bit
+	UCSRC |= (1 << UCSZ0) | (1 << UCSZ1);
+
+}
+
+void usart_putchar(char data) {
+	// Wait for empty transmit buffer
+	while (!(UCSRA & (1 << UDRE)));
+	// Start transmission
+	UDR = data;
 }
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
