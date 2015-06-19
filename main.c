@@ -10,6 +10,8 @@
  
 #include <avr/io.h>
 #include <util/delay.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define BAUD 9600
 #define MYUBRR F_CPU/8/BAUD-1
@@ -31,6 +33,9 @@ void delay(uint8_t ms);
 
 void usart_init(uint16_t ubrr);
 void usart_putchar(char data);
+void usart_pstr(char * str);
+char usart_getchar(void);
+void usart_gstr(char myString[], uint8_t maxLength);
 
 int main(void) {
 	
@@ -59,25 +64,64 @@ int main(void) {
 	
 	// ------ Event loop ----- //
 	
+	
+	char serialRead[64]; // Our buffer to record received bytes
+	char serialCommand[6];
+	
 	while (1) {
+		
+		usart_gstr(serialRead, 64);
+		
+		strncpy(serialCommand, serialRead, 5);
+		serialCommand[5] = 0; // null terminate string
+		
+		usart_pstr(serialCommand);
+		usart_putchar('\n');
+		
+		if(strcmp(serialCommand, "AT+SC") == 0) {
+			
+			int whiteValue;
+			int redValue;
+			int greenValue;
+			int blueValue;
+			
+			usart_pstr("RECEIVED SET COLOR COMMAND");
+			usart_putchar('\n');
+			usart_pstr("OK");
+			usart_putchar('\n');
+			
+			char *color_command = strtok(serialRead, "=");
+			char *color_values = strtok(NULL, "=");
+			
+			char *whiteString = strtok(color_values, ",");
+			whiteValue = atoi(whiteString);
+			
+			char *redString = strtok(NULL, ",");
+			redValue = atoi(redString);
+			
+			char *greenString = strtok(NULL, ",");
+			greenValue = atoi(greenString);
+			
+			char *blueString = strtok(NULL, ",");
+			blueValue = atoi(blueString);
+			
+			display_color(whiteValue, redValue, greenValue, blueValue);
+			
+			usart_pstr(color_command);
+			usart_putchar('\n');
+			usart_pstr(color_values);
+			usart_putchar('\n');
+			
+			usart_pstr(whiteString);
+			usart_putchar('\n');
+			
+		} else {
+			usart_pstr("UNKNOWN COMMAND");
+			usart_putchar('\n');
+		}
 		
 		//cycle_test(10);
 		//cycle_colors(15);
-		usart_putchar('H');
-		usart_putchar('e');
-		usart_putchar('l');
-		usart_putchar('l');
-		usart_putchar('o');
-		usart_putchar(' ');
-		usart_putchar('W');
-		usart_putchar('o');
-		usart_putchar('r');
-		usart_putchar('l');
-		usart_putchar('d');
-		usart_putchar('!');
-		usart_putchar('\n');
-		
-		_delay_ms(1000);
 
 	}
 	
@@ -106,6 +150,44 @@ void usart_putchar(char data) {
 	while (!(UCSRA & (1 << UDRE)));
 	// Start transmission
 	UDR = data;
+}
+
+void usart_pstr(char *s) {
+	
+	// Loop through entire string
+	while(*s) {
+		usart_putchar(*s);
+		s++;
+	}
+	
+}
+
+char usart_getchar() {
+	// Wait for incoming data
+	while(!(UCSRA & (1 << RXC)));
+	return UDR;
+}
+
+void usart_gstr(char myString[], uint8_t maxLength) {
+	char response;
+	uint8_t i;
+	
+	i = 0;
+	
+	while(i < (maxLength - 1)) {
+		
+		response = usart_getchar();
+		
+		if(response == '\n') {
+			break;
+		} else {
+			myString[i] = response;
+			i++;
+		}
+		
+		myString[i] = 0;
+	
+	}
 }
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
