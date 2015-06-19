@@ -5,7 +5,7 @@
  * 
  * Author       : Julian Labuschagne
  * Date         : 2015/06/12
- * Last Updated : 2015/06/14
+ * Last Updated : 2015/06/19
  */ 
  
 #include <avr/io.h>
@@ -26,6 +26,7 @@
 
 #define DELAY_TIME 10;
 
+void pwm_init(void);
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue);
 void cycle_test(uint8_t speed);
 void cycle_colors(uint8_t speed);
@@ -40,18 +41,9 @@ void usart_gstr(char myString[], uint8_t maxLength);
 int main(void) {
 	
 	/**
-	 * Counter 0
-	 * Setup  fast PWM (mode 3)
-	 */ 
-	TCCR0A |= (1 << WGM00) | (1 << WGM01) | (1 << COM0A1) | (1 << COM0B1);
-	TCCR0B |= (1 << CS01);
-	
-	/**
-	 * Counter 1
-	 * Setup fast PWM 
+	 * Enable PWM
 	 */
-	TCCR1A |= (1 << WGM10) | (1 << COM1A1) | (1 << COM1B1); 
-	TCCR1B |= (1 << WGM12) | (1 << CS11);
+	pwm_init();
 	
 	/**
 	 * Enable USART
@@ -87,11 +79,13 @@ int main(void) {
 			
 			usart_pstr("RECEIVED SET COLOR COMMAND");
 			usart_putchar('\n');
-			usart_pstr("OK");
-			usart_putchar('\n');
 			
 			char *color_command = strtok(serialRead, "=");
 			char *color_values = strtok(NULL, "=");
+			
+			usart_pstr(color_command);
+			usart_putchar('=');
+			usart_pstr(color_values);
 			
 			char *whiteString = strtok(color_values, ",");
 			whiteValue = atoi(whiteString);
@@ -107,12 +101,9 @@ int main(void) {
 			
 			display_color(whiteValue, redValue, greenValue, blueValue);
 			
-			usart_pstr(color_command);
-			usart_putchar('\n');
-			usart_pstr(color_values);
-			usart_putchar('\n');
 			
-			usart_pstr(whiteString);
+			usart_putchar('\n');
+			usart_pstr("OK");
 			usart_putchar('\n');
 			
 		} else {
@@ -188,6 +179,24 @@ void usart_gstr(char myString[], uint8_t maxLength) {
 		myString[i] = 0;
 	
 	}
+}
+
+void pwm_init() {
+	
+	/**
+	 * Counter 0
+	 * Setup  fast PWM (mode 3)
+	 */ 
+	TCCR0A |= (1 << WGM00) | (1 << WGM01) | (1 << COM0A1) | (1 << COM0B1);
+	TCCR0B |= (1 << CS01);
+	
+	/**
+	 * Counter 1
+	 * Setup fast PWM 
+	 */
+	TCCR1A |= (1 << WGM10) | (1 << COM1A1) | (1 << COM1B1); 
+	TCCR1B |= (1 << WGM12) | (1 << CS11);
+	
 }
 
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue) {
