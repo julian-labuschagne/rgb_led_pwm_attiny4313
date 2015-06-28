@@ -9,6 +9,7 @@
  */ 
  
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 #include <string.h>
 #include <stdlib.h>
@@ -38,6 +39,8 @@ void usart_pstr(char * str);
 char usart_getchar(void);
 void usart_gstr(char myString[], uint8_t maxLength);
 
+void command_parse(char * cmd);
+
 int main(void) {
 	
 	/**
@@ -56,60 +59,13 @@ int main(void) {
 	
 	// ------ Event loop ----- //
 	
-	
 	char serialRead[64]; // Our buffer to record received bytes
-	char serialCommand[6];
 	
 	while (1) {
 		
+		// Get string from Serial and parse the command
 		usart_gstr(serialRead, 64);
-		
-		strncpy(serialCommand, serialRead, 5);
-		serialCommand[5] = 0; // null terminate string
-		
-		usart_pstr(serialCommand);
-		usart_putchar('\n');
-		
-		if(strcmp(serialCommand, "AT+SC") == 0) {
-			
-			int whiteValue;
-			int redValue;
-			int greenValue;
-			int blueValue;
-			
-			usart_pstr("RECEIVED SET COLOR COMMAND");
-			usart_putchar('\n');
-			
-			char *color_command = strtok(serialRead, "=");
-			char *color_values = strtok(NULL, "=");
-			
-			usart_pstr(color_command);
-			usart_putchar('=');
-			usart_pstr(color_values);
-			
-			char *whiteString = strtok(color_values, ",");
-			whiteValue = atoi(whiteString);
-			
-			char *redString = strtok(NULL, ",");
-			redValue = atoi(redString);
-			
-			char *greenString = strtok(NULL, ",");
-			greenValue = atoi(greenString);
-			
-			char *blueString = strtok(NULL, ",");
-			blueValue = atoi(blueString);
-			
-			display_color(whiteValue, redValue, greenValue, blueValue);
-			
-			
-			usart_putchar('\n');
-			usart_pstr("OK");
-			usart_putchar('\n');
-			
-		} else {
-			usart_pstr("UNKNOWN COMMAND");
-			usart_putchar('\n');
-		}
+		command_parse(serialRead);
 		
 		//cycle_test(10);
 		//cycle_colors(15);
@@ -178,6 +134,58 @@ void usart_gstr(char myString[], uint8_t maxLength) {
 		
 		myString[i] = 0;
 	
+	}
+}
+
+void command_parse(char * cmd) {
+	
+	char serialCommand[6];
+	
+	strncpy(serialCommand, cmd, 5);
+	serialCommand[5] = 0; // null terminate string
+
+	usart_pstr(serialCommand);
+	usart_putchar('\n');
+
+	if(strcmp(serialCommand, "AT+SC") == 0) {
+		
+		int whiteValue;
+		int redValue;
+		int greenValue;
+		int blueValue;
+		
+		usart_pstr("RECEIVED SET COLOR COMMAND");
+		usart_putchar('\n');
+		
+		char *color_command = strtok(cmd, "=");
+		char *color_values = strtok(NULL, "=");
+		
+		usart_pstr(color_command);
+		usart_putchar('=');
+		usart_pstr(color_values);
+		
+		char *whiteString = strtok(color_values, ",");
+		whiteValue = atoi(whiteString);
+		
+		char *redString = strtok(NULL, ",");
+		redValue = atoi(redString);
+		
+		char *greenString = strtok(NULL, ",");
+		greenValue = atoi(greenString);
+		
+		char *blueString = strtok(NULL, ",");
+		blueValue = atoi(blueString);
+		
+		display_color(whiteValue, redValue, greenValue, blueValue);
+		
+		
+		usart_putchar('\n');
+		usart_pstr("OK");
+		usart_putchar('\n');
+		
+	} else {
+		usart_pstr("UNKNOWN COMMAND");
+		usart_putchar('\n');
 	}
 }
 
