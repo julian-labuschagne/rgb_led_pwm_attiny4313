@@ -45,12 +45,13 @@ void usart_gstr(char myString[], uint8_t maxLength);
 void command_parse(char * cmd);
 void command_response(uint8_t status);
 void command_setcolor(char * cmd);
+void command_savecolor(void);
 
 // Global variables
-int whiteValue = 0;
-int redValue = 0;
-int greenValue = 0;
-int blueValue = 0;
+uint8_t whiteValue = 0;
+uint8_t redValue = 0;
+uint8_t greenValue = 0;
+uint8_t blueValue = 0;
 
 int main(void) {
 	
@@ -72,6 +73,11 @@ int main(void) {
 	/**
 	 * Display default colors
 	 */
+	whiteValue = eeprom_read_byte((uint8_t *) 0);
+	redValue = eeprom_read_byte((uint8_t *) 1);
+	greenValue = eeprom_read_byte((uint8_t *) 2);
+	blueValue = eeprom_read_byte((uint8_t *) 3);
+	
 	display_color(whiteValue, redValue, greenValue, blueValue);
 	
 	char serialRead[64]; // Our buffer to record received bytes
@@ -171,6 +177,7 @@ void command_parse(char * cmd) {
 	
 	else if (strstr(cmd, "AT+SAVECOLOR") != 0) {
 		usart_pstr("Save color command\n");
+		command_savecolor();
 		command_response(1);
 	}
 	
@@ -237,6 +244,23 @@ void command_setcolor(char *cmd) {
 	usart_pstr(cmd);
 	usart_pstr("\n");
 
+}
+
+/**
+ * Save color values to the EEPROM
+ */
+void command_savecolor(void) {
+	uint8_t *address_white = (uint8_t *) 0;
+	eeprom_update_byte(address_white, whiteValue);
+	
+	uint8_t *address_red = (uint8_t *) 1;
+	eeprom_update_byte(address_red, redValue);
+	
+	uint8_t *address_green = (uint8_t *) 2;
+	eeprom_update_byte(address_green, greenValue);
+	
+	uint8_t *address_blue = (uint8_t *) 3;
+	eeprom_update_byte(address_blue, blueValue);
 }
 
 /**
