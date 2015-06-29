@@ -40,6 +40,14 @@ char usart_getchar(void);
 void usart_gstr(char myString[], uint8_t maxLength);
 
 void command_parse(char * cmd);
+void command_response(uint8_t status);
+void command_setcolor(char * cmd);
+
+// Global variables
+int whiteValue = 0;
+int redValue = 0;
+int greenValue = 0;
+int blueValue = 0;
 
 int main(void) {
 	
@@ -53,14 +61,19 @@ int main(void) {
 	 */
 	usart_init(MYUBRR);
 	
+	
 	// -------- Inits -------- //
 	DDRB |= (1 << LED_GREEN) | (1 << LED_BLUE) | (1 << LED_CLEAR);
 	DDRD |= (1 << LED_RED);
 	
-	// ------ Event loop ----- //
+	/**
+	 * Display default colors
+	 */
+	display_color(whiteValue, redValue, greenValue, blueValue);
 	
 	char serialRead[64]; // Our buffer to record received bytes
 	
+	// ------ Event loop ----- //
 	while (1) {
 		
 		// Get string from Serial and parse the command
@@ -147,46 +160,66 @@ void command_parse(char * cmd) {
 	usart_pstr(serialCommand);
 	usart_putchar('\n');
 
-	if(strcmp(serialCommand, "AT+SC") == 0) {
-		
-		int whiteValue;
-		int redValue;
-		int greenValue;
-		int blueValue;
-		
-		usart_pstr("RECEIVED SET COLOR COMMAND");
-		usart_putchar('\n');
-		
-		char *color_command = strtok(cmd, "=");
-		char *color_values = strtok(NULL, "=");
-		
-		usart_pstr(color_command);
-		usart_putchar('=');
-		usart_pstr(color_values);
-		
-		char *whiteString = strtok(color_values, ",");
-		whiteValue = atoi(whiteString);
-		
-		char *redString = strtok(NULL, ",");
-		redValue = atoi(redString);
-		
-		char *greenString = strtok(NULL, ",");
-		greenValue = atoi(greenString);
-		
-		char *blueString = strtok(NULL, ",");
-		blueValue = atoi(blueString);
-		
-		display_color(whiteValue, redValue, greenValue, blueValue);
-		
-		
-		usart_putchar('\n');
-		usart_pstr("OK");
-		usart_putchar('\n');
-		
-	} else {
-		usart_pstr("UNKNOWN COMMAND");
-		usart_putchar('\n');
+	if (strcmp(cmd, "AT") == 0) {
+		command_response(1);
 	}
+	
+	else if (strstr(cmd, "AT+SETCOLOR") != 0) {
+		usart_pstr("Set color command\n");
+		command_setcolor(cmd);
+		command_response(1);
+	}
+	
+	else if (strstr(cmd, "AT+SAVECOLOR") != 0) {
+		usart_pstr("Save color command\n");
+		command_response(1);
+	}
+	
+	else {
+		usart_pstr("Unknown command\n");
+		command_response(0);
+	} 
+}
+
+void command_response(uint8_t status) {
+	if(status) {
+		usart_pstr("OK\n");
+	}
+	else {
+		usart_pstr("ERROR\n");
+	}
+}
+
+void command_setcolor(char *cmd) {
+	
+	// We dont want to destoy the original command string
+	// So we create a copy to perform strtok() on
+	char tmpstr[strlen(cmd) + 1];
+	strcpy(tmpstr, cmd);
+	
+	// Remove everything in front of the equals sign
+	strtok(tmpstr, "=");
+	
+	// Get the color values in the command string
+	char *color_values = strtok(NULL, "=");
+		
+	char *whiteString = strtok(color_values, ",");
+	whiteValue = atoi(whiteString);
+		
+	char *redString = strtok(NULL, ",");
+	redValue = atoi(redString);
+		
+	char *greenString = strtok(NULL, ",");
+	greenValue = atoi(greenString);
+		
+	char *blueString = strtok(NULL, ",");
+	blueValue = atoi(blueString);
+		
+	display_color(whiteValue, redValue, greenValue, blueValue);
+	
+	usart_pstr(cmd);
+	usart_pstr("\n");
+
 }
 
 void pwm_init() {
