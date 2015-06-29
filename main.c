@@ -153,15 +153,11 @@ void usart_gstr(char myString[], uint8_t maxLength) {
 	}
 }
 
+/**
+ * Parse the string read from USART 
+ * and check which command have been sent
+ */
 void command_parse(char * cmd) {
-	
-	char serialCommand[6];
-	
-	strncpy(serialCommand, cmd, 5);
-	serialCommand[5] = 0; // null terminate string
-
-	usart_pstr(serialCommand);
-	usart_putchar('\n');
 
 	if (strcmp(cmd, "AT") == 0) {
 		command_response(1);
@@ -181,9 +177,14 @@ void command_parse(char * cmd) {
 	else {
 		usart_pstr("Unknown command\n");
 		command_response(0);
-	} 
+	}
+	 
 }
 
+/**
+ * Display a response if the command was 
+ * successful or uncessfull
+ */
 void command_response(uint8_t status) {
 	if(status) {
 		usart_pstr("OK\n");
@@ -193,6 +194,9 @@ void command_response(uint8_t status) {
 	}
 }
 
+/**
+ * Display the color that was sent from the SETCOLOR cmd
+ */
 void command_setcolor(char *cmd) {
 	
 	// We dont want to destoy the original command string
@@ -235,6 +239,9 @@ void command_setcolor(char *cmd) {
 
 }
 
+/**
+ * Initialize PWM
+ */
 void pwm_init() {
 	
 	/**
