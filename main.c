@@ -5,7 +5,7 @@
  * 
  * Author       : Julian Labuschagne
  * Date         : 2015/06/12
- * Last Updated : 2015/06/19
+ * Last Updated : 2015/06/29
  */ 
  
 #include <avr/io.h>
@@ -27,18 +27,21 @@
 
 #define DELAY_TIME 10;
 
+// Declare LED PWM functions
 void pwm_init(void);
 void display_color(uint8_t white, uint8_t red, uint8_t green, uint8_t blue);
 void cycle_test(uint8_t speed);
 void cycle_colors(uint8_t speed);
 void delay(uint8_t ms);
 
+// Declare USART functions
 void usart_init(uint16_t ubrr);
 void usart_putchar(char data);
 void usart_pstr(char * str);
 char usart_getchar(void);
 void usart_gstr(char myString[], uint8_t maxLength);
 
+// Declare command functions
 void command_parse(char * cmd);
 void command_response(uint8_t status);
 void command_setcolor(char * cmd);
@@ -202,21 +205,31 @@ void command_setcolor(char *cmd) {
 	
 	// Get the color values in the command string
 	char *color_values = strtok(NULL, "=");
-		
+	
+	// Get the value for the White LED and 
+	// assign to global variable whiteValue 	
 	char *whiteString = strtok(color_values, ",");
 	whiteValue = atoi(whiteString);
-		
+	
+	// Get the value for the Red LED and 
+	// assign to global variable redValue	
 	char *redString = strtok(NULL, ",");
 	redValue = atoi(redString);
-		
+	
+	// Get the value for the Green LED and 
+	// assign to global variable greenValue	
 	char *greenString = strtok(NULL, ",");
 	greenValue = atoi(greenString);
-		
+	
+	// Get the value for the Blue LED and 
+	// assign to global variable blueValue	
 	char *blueString = strtok(NULL, ",");
 	blueValue = atoi(blueString);
 		
+	// Display the color
 	display_color(whiteValue, redValue, greenValue, blueValue);
 	
+	// Echo the command 
 	usart_pstr(cmd);
 	usart_pstr("\n");
 
